@@ -11,6 +11,10 @@ import NotFoundScreen from "../screens/NotFoundScreen";
 import BottomTabNavigator from "./BottomTabNavigator";
 import LinkingConfiguration from "./LinkingConfiguration";
 
+import CategoriesScreen from "../screens/Categories";
+import CategoryScreen from "../screens/Category";
+import Category from "../screens/Category";
+
 export default function Navigation({ colorScheme }) {
   return (
     <NavigationContainer
@@ -29,12 +33,15 @@ const Stack = createStackNavigator();
 function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Root" component={BottomTabNavigator} />
-      <Stack.Screen
+        <Stack.Screen name="Root" component={BottomTabNavigator}  />
+        {/*<Stack.Screen name="Categories" component={CategoriesScreen} />*/}
+        {/*<Stack.Screen name="CategoryScreen" component={CategoryScreen} />*/}
+        <Stack.Screen name="CategoryScreen" component={Category} title={"Category Name"} />
+        <Stack.Screen
         name="NotFound"
         component={NotFoundScreen}
         options={{ title: "Oops!" }}
-      />
+        />
     </Stack.Navigator>
   );
 }

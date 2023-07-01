@@ -11,9 +11,9 @@ export function MonoText(props) {
         {
           // The "code" font is different on each platform.
           fontFamily: Platform.select({
-            default: "Courier",
-            ios: "Courier New",
-            android: "monospace",
+            default: "Poppins-Regular",
+            ios: "Poppins-Regular",
+            android: "Poppins-Regular",
           }),
           fontWeight: "500",
         },

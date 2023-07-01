@@ -2,6 +2,7 @@ import { StyleSheet } from "react-native";
 
 import EditScreenInfo from "../components/EditScreenInfo";
 import { Text, View } from "../components/Themed";
+import {Surface} from "react-native-paper";
 
 export default function TabOneScreen() {
   return (
@@ -13,6 +14,7 @@ export default function TabOneScreen() {
         darkColor="rgba(255,255,255,0.1)"
       />
       <EditScreenInfo path="/screens/TabOneScreen.tsx" />
+      <Surface elevation={2}><Text>HELAAA</Text></Surface>
     </View>
   );
 }
