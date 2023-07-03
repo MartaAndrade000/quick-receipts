@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import './firebase/firebaseConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useLoadedAssets } from './hooks/useLoadedAssets';
 import Navigation from './navigation';
