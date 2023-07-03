@@ -11,8 +11,6 @@ import NotFoundScreen from "../screens/NotFoundScreen";
 import BottomTabNavigator from "./BottomTabNavigator";
 import LinkingConfiguration from "./LinkingConfiguration";
 
-import CategoriesScreen from "../screens/Categories";
-import CategoryScreen from "../screens/Category";
 import Category from "../screens/Category";
 
 export default function Navigation({ colorScheme }) {

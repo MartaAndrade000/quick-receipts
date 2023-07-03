@@ -1,15 +1,14 @@
 import React from 'react';
-import {View, Text, FlatList, StyleSheet} from 'react-native';
+import {View, Text, FlatList, StyleSheet, ScrollView} from 'react-native';
 
 import WaveBackground from "../components/WaveBackground";
-import ReceiptCard from '../components/ReceiptCard';
-import CategoryCard from '../components/CategoryCard';
+import ReceiptCard from '../components/cards/ReceiptCard';
+import CategoryCard from '../components/cards/CategoryCard';
 
 import {styles} from './Home';
 
 
-import {categoriesStyles} from "./Categories";
-import Button from "../components/Button";
+import CustomButton from "../components/CustomButton";
 
 
 const FinancesScreen = () => {
@@ -65,47 +64,56 @@ const FinancesScreen = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Finances</Text>
-            <WaveBackground/>
-            <View style={styles.contentContainer}>
-                <View style={financesStyles.titleContainer}>
-                    <Text>Most Recent Receipt</Text>
-                    <View style={{...financesStyles.buttonContainer}}>
-                        <Button
-                            imageSource={require('../assets/icons/plus.png')}
-                            label="Show More"
-                            onPress={handleMoreReceipts}
-                        />
-                    </View>
+        <ScrollView>
+            <View style={styles.container}>
+                <Text style={styles.title}>Finances</Text>
+                <WaveBackground/>
+
+                <View style={financesStyles.container}>
+                    <Text style={financesStyles.title}>Total Expenses</Text>
+                    <Text style={financesStyles.subtitle}>$105</Text>
+                    <Text style={financesStyles.footer}>Total Amount of Receipts: 42</Text>
                 </View>
 
-                <FlatList
-                    data={receiptData}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={renderCardItemReceipt}
-                />
-            </View>
-            <View style={styles.contentContainer}>
-                <View style={financesStyles.titleContainer}>
-                    <Text>Your Categories</Text>
-                    <View style={{...financesStyles.buttonContainer}}>
-                        <Button
-                            imageSource={require('../assets/icons/plus.png')}
-                            label="Show More"
-                            onPress={handleMoreReceipts}
-                        />
+                <View style={styles.contentContainer}>
+                    <View style={financesStyles.titleContainer}>
+                        <Text>Most Recent Receipt</Text>
+                        <View style={{...financesStyles.buttonContainer}}>
+                            <CustomButton
+                                imageSource={require('../assets/icons/more.png')}
+                                label="Show More"
+                                onPress={handleMoreReceipts}
+                            />
+                        </View>
                     </View>
+
+                    <FlatList
+                        data={receiptData}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderCardItemReceipt}
+                    />
                 </View>
-                <FlatList
-                    numColumns={2}
-                    horizontal={false}
-                    //keyExtractor={(item) => item.id.toString()}
-                    data={cardData}
-                    renderItem={renderCardItemCategory}
-                />
+                <View style={styles.contentContainer}>
+                    <View style={financesStyles.titleContainer}>
+                        <Text>Your Categories</Text>
+                        <View style={{...financesStyles.buttonContainer}}>
+                            <CustomButton
+                                imageSource={require('../assets/icons/sort.png')}
+                                label="Order By"
+                                onPress={handleMoreReceipts}
+                            />
+                        </View>
+                    </View>
+                    <FlatList
+                        numColumns={2}
+                        horizontal={false}
+                        //keyExtractor={(item) => item.id.toString()}
+                        data={cardData}
+                        renderItem={renderCardItemCategory}
+                    />
+                </View>
             </View>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -121,7 +129,35 @@ const financesStyles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         paddingBottom: 15
-    }
+    },
+    container: {
+        marginTop: 45,
+        width: 250,
+        height: 150,
+        backgroundColor: '#F6F7FC',
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: "center",
+    },
+    title: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#9EDCE1',
+        marginBottom: 10,
+    },
+    subtitle: {
+        fontSize: 20,
+        color: '#505050',
+        marginBottom: 10,
+    },
+    footer: {
+        fontSize: 12,
+        color: '#505050',
+
+    },
+
+
 
 });
 

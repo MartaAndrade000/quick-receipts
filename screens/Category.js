@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import WaveBackground from "../components/WaveBackground";
-import Card from '../components/ReceiptCard';
+import Card from '../components/cards/ReceiptCard';
 import {styles} from './Home';
 
-import Button from '../components/Button';
+import CustomButton from '../components/CustomButton';
+import {createStackNavigator} from "@react-navigation/stack";
+import Receipt from "./Receipt";
 
 const CategoryScreen = () => {
     const cardData = [
@@ -43,18 +45,18 @@ const CategoryScreen = () => {
             <Text style={styles.title}>Category Name</Text>
             <WaveBackground />
             <View style={categoryStyles.buttonContainer}>
-                <Button
+                <CustomButton
                     imageSource={require('../assets/icons/delete.png')}
                     label="Delete Category"
                     onPress={handleDeleteCategory}
                 />
-                <Button
+                <CustomButton
                     imageSource={require('../assets/icons/pencil1.png')}
                     label="Edit Category"
                     onPress={handleEditCategory}
                 />
             </View>
-            <View style={styles.contentContainer}>
+            <View style={{...styles.contentContainer, marginTop:0}}>
                 <FlatList
                     data={cardData}
                     keyExtractor={(item) => item.id.toString()}
@@ -64,6 +66,17 @@ const CategoryScreen = () => {
         </View>
     );
 };
+
+const Stack = createStackNavigator();
+
+const Main = () => {
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="Category1" component={CategoryScreen} />
+            <Stack.Screen name="Receipt" component={Receipt} />
+        </Stack.Navigator>
+    )
+}
 
 const categoryStyles = StyleSheet.create({
     buttonContainer: {
@@ -75,4 +88,4 @@ const categoryStyles = StyleSheet.create({
 });
 
 
-export default CategoryScreen;
+export default Main;

@@ -1,18 +1,17 @@
 import React from 'react';
 
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useColorScheme, View, Image} from 'react-native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {useColorScheme, View, Image} from 'react-native';
 
-import { createStackNavigator } from '@react-navigation/stack';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 
 import Colors from '../constants/Colors';
-import TabTwoScreen from '../screens/TabTwoScreen';
 import Header from "../components/Header";
 import HomeScreen from "../screens/Home";
-import Category from "../screens/Category";
 import Categories from "../screens/Categories";
 import Finances from "../screens/Finances";
+import Profile from "../screens/Profile";
+import AddReceipt from "../screens/AddReceipt";
 
 const Stack = createStackNavigator();
 const BottomTab = createBottomTabNavigator();
@@ -21,15 +20,17 @@ function BottomTabNavigator() {
     const colorScheme = useColorScheme();
     return (
         <BottomTab.Navigator
-            initialRouteName="TabOne"
-            screenOptions={({ route }) => ({
-                tabBarIcon: ({ color }) => (
-                    <CustomTabBarIcon
-                        name={route.name}
-                        color={color}
-                        focused={route.name === getFocusedRouteNameFromRoute(route)}
-                    />
-                ),
+            initialRouteName="Home"
+            // activeColor="#C0E5E8"
+            // inactiveColor="#C0E5E8"
+            screenOptions={() => ({
+                // tabBarIcon: ({ color }) => (
+                //     // <CustomTabBarIcon
+                //     //     name={route.name}
+                //     //     color={color}
+                //     //     focused={route.name === getFocusedRouteNameFromRoute(route)}
+                //     // />
+                // ),
                 tabBarActiveTintColor: Colors[colorScheme].tint,
                 tabBarStyle: {
                     height: 60,
@@ -39,12 +40,12 @@ function BottomTabNavigator() {
             <BottomTab.Screen
                 name="Home"
                 component={HomeScreen}
-                options={({ route }) => ({
+                options={({}) => ({
                     headerShown: false,
-                    tabBarIcon: ({ color, focused }) => (
+                    tabBarIcon: ({color, focused}) => (
                         <View style={styles.tabBarIconContainer}>
-                            {focused && <View style={styles.tabBarLine} />}
-                            <TabBarIcon name="home" color={"#C0E5E8"} />
+                            {focused && <View style={styles.tabBarLine}/>}
+                            <TabBarIcon name="home" color={"#C0E5E8"}/>
                         </View>
                     ),
                 })}
@@ -54,12 +55,12 @@ function BottomTabNavigator() {
             <BottomTab.Screen
                 name="Categories"
                 component={Categories}
-                options={({ route }) => ({
+                options={() => ({
                     headerShown: false,
-                    tabBarIcon: ({ color, focused }) => (
+                    tabBarIcon: ({color, focused}) => (
                         <View style={styles.tabBarIconContainer}>
-                            {focused && <View style={styles.tabBarLine} />}
-                            <TabBarIcon name="categories" color={"#C0E5E8"} />
+                            {focused && <View style={styles.tabBarLine}/>}
+                            <TabBarIcon name="categories" color={"#C0E5E8"}/>
                         </View>
                     ),
                 })}
@@ -67,7 +68,7 @@ function BottomTabNavigator() {
 
             <BottomTab.Screen
                 name="Add"
-                component={TabTwoScreen}
+                component={AddReceipt}
                 options={{
                     headerShown: false,
                     tabBarIcon: () => (
@@ -87,12 +88,12 @@ function BottomTabNavigator() {
             <BottomTab.Screen
                 name="Finances"
                 component={Finances}
-                options={({ route }) => ({
+                options={({}) => ({
                     headerShown: false,
-                    tabBarIcon: ({ color, focused }) => (
+                    tabBarIcon: ({focused}) => (
                         <View style={styles.tabBarIconContainer}>
-                            {focused && <View style={styles.tabBarLine} />}
-                            <TabBarIcon name="finances" color={"#C0E5E8"} />
+                            {focused && <View style={styles.tabBarLine}/>}
+                            <TabBarIcon name="finances" color={"#C0E5E8"}/>
                         </View>
                     ),
                 })}
@@ -100,13 +101,13 @@ function BottomTabNavigator() {
 
             <BottomTab.Screen
                 name="Profile"
-                component={Category}
-                options={({ route }) => ({
+                component={Profile}
+                options={({}) => ({
                     headerShown: false,
-                    tabBarIcon: ({ color, focused }) => (
+                    tabBarIcon: ({focused}) => (
                         <View style={styles.tabBarIconContainer}>
-                            {focused && <View style={styles.tabBarLine} />}
-                            <TabBarIcon name="profile" color={"#C0E5E8"} />
+                            {focused && <View style={styles.tabBarLine}/>}
+                            <TabBarIcon name="profile" color={"#C0E5E8"}/>
                         </View>
                     ),
                 })}
@@ -120,7 +121,7 @@ const RootNavigator = () => {
     return (
         <Stack.Navigator
             screenOptions={{
-                headerTitle: () => <Header />,
+                headerTitle: () => <Header/>,
                 headerTitleAlign: 'center',
                 headerStyle: {
                     borderBottomWidth: 1,
@@ -129,13 +130,14 @@ const RootNavigator = () => {
                 },
             }}
         >
-            <Stack.Screen name="Main" component={BottomTabNavigator} />
+            <Stack.Screen name="Main" component={BottomTabNavigator}/>
         </Stack.Navigator>
     );
 };
 
 export default RootNavigator;
-function TabBarIcon({ name, color }) {
+
+function TabBarIcon({name, color}) {
     let iconPath = '';
 
     switch (name) {
@@ -159,13 +161,11 @@ function TabBarIcon({ name, color }) {
         <View>
             <Image
                 source={iconPath}
-                style={{ width: 30, height: 30, tintColor: color }}
+                style={{width: 30, height: 30, tintColor: color}}
             />
         </View>
     );
 }
-
-
 
 
 const styles = {

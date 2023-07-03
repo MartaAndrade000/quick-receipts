@@ -1,8 +1,15 @@
-import {Image, StyleSheet, Text, View} from "react-native";
+import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {useNavigation} from "@react-navigation/native";
 
 const Card = ({storeName, purchaseValue, location, expirationDate, category, image}) => {
+
+    const navigation = useNavigation();
+    const handleCardPress = () => {
+        navigation.navigate('Receipt');
+    };
+
     return (
-        <View style={styles.cardContainer}>
+        <TouchableOpacity onPress={handleCardPress} style={styles.cardContainer}>
             <View style={styles.leftSection}>
                 <Text style={styles.storeName}>{storeName}</Text>
                 <Text style={styles.text}>{purchaseValue}</Text>
@@ -13,7 +20,7 @@ const Card = ({storeName, purchaseValue, location, expirationDate, category, ima
             <View style={styles.rightSection}>
                 <Image source={image} style={styles.image}/>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 
@@ -25,7 +32,7 @@ export const styles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 16,
         paddingHorizontal: 16,
-        paddingVertical: 5
+        paddingVertical: 10
     },
     leftSection: {
         flex: 1,
@@ -34,7 +41,6 @@ export const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'flex-end',
         justifyContent: 'center',
-        // borderWidth:1
     },
     storeName: {
         fontSize: 16,
@@ -59,8 +65,8 @@ export const styles = StyleSheet.create({
         lineHeight: 18
     },
     image: {
-        width: 110,
-        height: 110,
+        width: 90,
+        height: 90,
         borderRadius: 10,
     },
 });

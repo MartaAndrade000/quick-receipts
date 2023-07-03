@@ -1,7 +1,9 @@
 import React from 'react';
 import {View, Text, FlatList, StyleSheet} from 'react-native';
 import WaveBackground from "../components/WaveBackground";
-import Card from '../components/ReceiptCard';
+import Card from '../components/cards/ReceiptCard';
+import Receipt from "./Receipt";
+import {createStackNavigator} from "@react-navigation/stack";
 
 
 const HomeScreen = () => {
@@ -87,4 +89,15 @@ export const styles = StyleSheet.create({
     },
 });
 
-export default HomeScreen;
+const Stack = createStackNavigator();
+
+const Main = () => {
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Receipt" component={Receipt} />
+        </Stack.Navigator>
+    )
+}
+
+export default Main;
