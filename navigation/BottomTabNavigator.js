@@ -12,6 +12,7 @@ import Categories from "../screens/Categories";
 import Finances from "../screens/Finances";
 import Profile from "../screens/Profile";
 import AddReceipt from "../screens/AddReceipt";
+import TestQR from "../screens/TestQR";
 
 const Stack = createStackNavigator();
 const BottomTab = createBottomTabNavigator();

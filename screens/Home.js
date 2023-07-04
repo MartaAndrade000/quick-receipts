@@ -1,13 +1,101 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, FlatList, StyleSheet} from 'react-native';
 import WaveBackground from "../components/WaveBackground";
 import Card from '../components/cards/ReceiptCard';
 import Receipt from "./Receipt";
 import {createStackNavigator} from "@react-navigation/stack";
+import {getAuth} from "firebase/auth";
+import db from "../firebase/firebaseConfig";
+import {collection, getDocs, onSnapshot, query, where} from "firebase/firestore";
 
 
 const HomeScreen = () => {
-    const cardData = [
+    const [cardData, setCardData] = useState([]);
+
+    // Get the authenticated user's ID
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const userId = user.uid;
+
+    const fetchCards = async () => {
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            const userId = user.uid;
+
+            const cardsRef = collection(db, 'receipts');
+
+            // Subscribe to the 'receipts' collection for real-time updates
+            const unsubscribe = onSnapshot(query(cardsRef, where('userId', '==', userId)), (querySnapshot) => {
+                const fetchedCardData = [];
+
+                querySnapshot.forEach((doc) => {
+                    const card = doc.data();
+                    fetchedCardData.push({
+                        id: doc.id,
+                        storeName: card.storeName,
+                        purchaseValue: card.totalValue,
+                        location: card.location,
+                        expirationDate: card.expirationDate,
+                        category: card.category,
+                        image: require('../assets/icons/qr-code.png'), // Assuming you want to use a default image
+                    });
+                });
+
+                setCardData(fetchedCardData);
+            });
+
+            // Return the unsubscribe function to detach the listener when needed
+            return unsubscribe;
+        } catch (error) {
+            console.error('Error fetching card data:', error);
+        }
+    };
+
+
+    useEffect(() => {
+        // Fetch the cards for the authenticated user
+        const fetchCards1 = async () => {
+            try {
+                // Get the authenticated user's ID
+                const auth = getAuth();
+                const user = auth.currentUser;
+                const userId = user.uid;
+
+                // Create a reference to the 'receipts' collection in your database
+                const cardsRef = collection(db, 'receipts');
+
+                // Fetch the cards for the authenticated user
+                const querySnapshot = await getDocs(query(cardsRef, where('userId', '==', userId)));
+
+                // Initialize an empty array to store the fetched card data
+                const fetchedCardData = [];
+
+                // Loop through the query snapshot and extract the card data
+                querySnapshot.forEach((doc) => {
+                    const card = doc.data();
+                    fetchedCardData.push({
+                        id: doc.id,
+                        storeName: card.storeName,
+                        purchaseValue: card.totalValue,
+                        location: card.location,
+                        expirationDate: card.expirationDate,
+                        category: card.category,
+                        image: require('../assets/icons/qr-code.png'), // Assuming you want to use a default image
+                    });
+                });
+
+                // Update the card data in the state
+                setCardData(fetchedCardData);
+            } catch (error) {
+                console.error('Error fetching card data:', error);
+            }
+        };
+        fetchCards();
+    }, []);
+
+
+    const cardDataOld = [
         {
             id: 1,
             storeName: 'Store A',
@@ -46,7 +134,7 @@ const HomeScreen = () => {
         },
     ];
 
-    const renderCardItem = ({ item }) => (
+    const renderCardItem = ({item}) => (
         <Card
             storeName={item.storeName}
             purchaseValue={item.purchaseValue}
@@ -60,7 +148,7 @@ const HomeScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Recently Added</Text>
-            <WaveBackground />
+            <WaveBackground/>
             <View style={styles.contentContainer}>
                 <FlatList
                     data={cardData}

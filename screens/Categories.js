@@ -1,7 +1,11 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, FlatList, Image, TouchableOpacity} from 'react-native';
 import {createStackNavigator} from "@react-navigation/stack";
 import {Modal, PaperProvider, Portal} from "react-native-paper";
+
+import { getAuth } from "firebase/auth";
+import { collection, addDoc, query, where, getDocs, onSnapshot} from "firebase/firestore";
+import db from "../firebase/firebaseConfig";
 
 
 import WaveBackground from "../components/WaveBackground";
@@ -17,8 +21,9 @@ import TextIn from "../components/inputs/TextInput";
 import ColorChooser from "../components/ColorChooser";
 
 
+
 const CategoriesScreen = () => {
-    const cardData = [
+    const cardDataOld = [
         { id: 1, categoryName: 'Clothes', numberReceipts: '10', color: '#E3D0FF' },
         { id: 2, categoryName: 'Food', numberReceipts: '5', color: '#FFD8B5' },
         { id: 3, categoryName: 'Home', numberReceipts: '8', color: '#FFD3D9'},
@@ -27,19 +32,7 @@ const CategoriesScreen = () => {
         { id: 6, categoryName: 'Cinema', numberReceipts: '5', color: '#A4E8C2' },
         { id: 7, categoryName: 'Meds', numberReceipts: '8', color: '#C2DFFF'},
         { id: 8, categoryName: 'Gifts', numberReceipts: '10', color: '#E9D8FF' },
-
-        // Add more data as needed
     ];
-
-    const handleAddCategory = () => {
-        showModal()
-    };
-
-    const handleSubmit = () => {
-        // ...
-        hideModal();
-    };
-
     const renderCardItem = ({ item }) => (
         <Card
             categoryName={item.categoryName}
@@ -48,12 +41,98 @@ const CategoriesScreen = () => {
         />
 
     );
+
     const [visible, setVisible] = React.useState(false);
+    const [categoryName, setCategoryName] = useState('');
+    const [cardData, setCardData] = useState([]);
 
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
 
     const [selectedColor, setSelectedColor] = useState('#DAF4EF');
+
+    const handleAddCategory = () => {
+        showModal()
+    };
+
+    const handleCategoryNameChange = (text) => {
+        setCategoryName(text);
+    };
+
+    // Get the authenticated user's ID
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const userId = user.uid;
+
+    useEffect(() => {
+        populateCategories();
+    }, []);
+
+    const populateCategories = async () => {
+        try {
+            const q = query(collection(db, 'categories'), where('userId', '==', userId));
+            const querySnapshot = await getDocs(q);
+
+            const data = [];
+            querySnapshot.forEach((doc) => {
+                const category = doc.data();
+
+                data.push({
+                    id: doc.id,
+                    categoryName: category.name,
+                    numberReceipts: '0', // Set initial value to 0
+                    color: category.color,
+                });
+            });
+            setCardData(data);
+            console.log(data);
+
+        } catch (error) {
+            console.log('Error populating categories:', error);
+        }
+    };
+
+    const populateCategoriesRefresh = async () => {
+        try {
+            const q = query(collection(db, 'categories'), where('userId', '==', userId));
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const data = [];
+                querySnapshot.forEach((doc) => {
+                    const category = doc.data();
+                    data.push({
+                        id: doc.id,
+                        categoryName: category.name,
+                        numberReceipts: '0', // Set initial value to 0
+                        color: category.color,
+                    });
+                });
+                setCardData(data);
+                console.log(data);
+            });
+
+            // Save the unsubscribe function to detach the listener when needed
+            // e.g., componentWillUnmount
+            return unsubscribe;
+        } catch (error) {
+            console.log('Error populating categories:', error);
+        }
+    };
+
+
+    const handleSubmit = async () => {
+        // Add a new document with a generated id.
+        const docRef = await addDoc(collection(db, "categories"), {
+            name: categoryName,
+            color: selectedColor,
+            userId: userId,
+        });
+        console.log("Document written with ID: ", docRef.id);
+        hideModal();
+    };
+
+
+
+
 
 
     return (
@@ -98,7 +177,11 @@ const CategoriesScreen = () => {
                         </View>
                         <View style={categoriesStyles.modalContentContainer}>
                             <Text style={categoriesStyles.title}>Add Category</Text>
-                            <TextIn  label={"Category Name"}/>
+                            <TextIn
+                                label={"Category Name"}
+                                value={categoryName}
+                                onChangeText={handleCategoryNameChange}
+                            />
 
                             <View style={categoriesStyles.colorChooser}>
                                 <View style={categoriesStyles.optionHeader}>
@@ -200,6 +283,7 @@ const Main = () => {
         <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen name="Categories" component={CategoriesScreen} />
             <Stack.Screen name="Category" component={Category} />
+
         </Stack.Navigator>
     )
 }

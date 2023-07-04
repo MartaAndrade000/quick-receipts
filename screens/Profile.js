@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import { Switch } from 'react-native-paper';
 import {View, Text, StyleSheet, Image, TouchableOpacity, ScrollView} from 'react-native';
+import { getAuth, signOut } from "firebase/auth";
 
 
 import WaveBackground from "../components/WaveBackground";
@@ -9,7 +10,8 @@ import {styles} from './Home';
 import CustomButton from '../components/CustomButton';
 import TextIn from "../components/inputs/TextInput";
 
-const CategoryScreen = () => {
+const auth = getAuth();
+const ProfileScreen = () => {
     let [variable, setVariable] = useState(true);
 
     const [isNotificationOn, setIsNotificationOn] = React.useState(false);
@@ -23,8 +25,16 @@ const CategoryScreen = () => {
         setVariable(!variable);
     };
 
-    // {/*style={{...styles.title, paddingHorizontal:16, paddingTop:16, paddingBottom: 16}}*/}
-    // {flex: 1, backgroundColor: '#F6F7FC',}
+    async function logout() {
+        try {
+            await signOut(auth);
+            // Sign-out successful.
+        } catch (error) {
+            // An error happened.
+            console.log(error);
+        }
+    }
+
     return (
         <View style={{...styles.container, paddingHorizontal: 0}}>
             <Text style={{...styles.title, paddingLeft: 16}} >Category Name</Text>
@@ -73,6 +83,10 @@ const CategoryScreen = () => {
                                 <Text style={profileStyles.text}>Dark Mode</Text>
                                 <Switch value={isModeOn} onValueChange={onToggleSwitchMode} color={"#9EDCE1"} />
                             </View>
+
+                            <TouchableOpacity style={profileStyles.logout} onPress={logout}>
+                                <Text>Logout</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
@@ -146,7 +160,15 @@ const profileStyles = StyleSheet.create({
         borderRadius: 5,
         backgroundColor: "#F6F7FC"
     },
+    logout: {
+        alignSelf: "flex-end",
+        alignItems: 'center',
+        backgroundColor: "#F6F7FC",
+        borderRadius: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 4,
+    }
 });
 
 
-export default CategoryScreen;
+export default ProfileScreen;

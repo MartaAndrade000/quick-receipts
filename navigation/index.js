@@ -32,6 +32,7 @@ const Stack = createStackNavigator();
 
 function RootNavigator() {
     const {user} = useAuthentication();
+    //const user = true;
 
     return user ? <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen name="Root" component={BottomTabNavigator}/>

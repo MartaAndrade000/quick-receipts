@@ -1,8 +1,13 @@
 import {TextInput} from "react-native-paper";
 
-const TextIn = (props) => {
+const TextIn = ({onChangeText, ...props}) => {
     return (
-        <TextInput {...props} style={style} right={<TextInput.Icon icon="square-edit-outline" color={(isTextInputFocused) => "#808080"}/>} />
+        <TextInput
+            {...props}
+            style={style}
+            right={<TextInput.Icon icon="square-edit-outline" color={(isTextInputFocused) => "#808080"}/>}
+            onChangeText={onChangeText}
+        />
     )
 }
 

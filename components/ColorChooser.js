@@ -10,11 +10,11 @@ const ColorChooser = ({ onSelectColor }) => {
         '#FDD9B5', // Peach
         '#FFE7C4', // Pale Yellow
         '#B9E1DC', // Light Blue
-        '#D9E4DD', // Mint Green
+        '#E3D0FF', // Mint Green
         '#F4D2C4', // Soft Orange
-        '#C9D6DB', // Grayish Blue
-        '#F0E0A3', // Pale Gold
-        '#EFD6AC', // Cream
+        '#C2DFFF', // Grayish Blue
+        '#A4E8C2', // Pale Gold
+        '#EFE4CB', // Cream
         '#FDC6E3', // Soft Pink
         '#FFD8B8', // Apricot
         '#FFF9C4', // Light Lemon
@@ -24,7 +24,7 @@ const ColorChooser = ({ onSelectColor }) => {
         '#CEDDE3', // Periwinkle
         '#FFECB3', // Pale Canary
         '#F9E8A6', // Pale Sunflower
-        '#EADFB9', // Light Khaki
+        '#FFF3B0', // Light Khaki
         '#FFE2BC', // Pale Peach
     ];
 

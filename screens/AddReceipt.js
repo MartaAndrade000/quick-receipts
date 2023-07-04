@@ -1,36 +1,201 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {View, Text, StyleSheet, Image, TouchableOpacity, ScrollView} from 'react-native';
 
-import Picker from 'react-native-picker'
-
-import {Modal, PaperProvider, Portal} from "react-native-paper";
-import {Path, Svg} from "react-native-svg";
-import TextIn from "../components/inputs/TextInput";
+import { useRoute } from '@react-navigation/native';
+import {createStackNavigator} from "@react-navigation/stack";
 import {useNavigation} from "@react-navigation/native";
+import QRCode from 'react-native-qrcode-svg';
+import { SelectList } from 'react-native-dropdown-select-list'
+
+import {Path, Svg} from "react-native-svg";
+import {Modal, PaperProvider, Portal} from "react-native-paper";
+
+import {getAuth} from "firebase/auth";
+import {collection, addDoc, getDocs, query, where} from "firebase/firestore";
+import db from "../firebase/firebaseConfig";
+
+import {FontAwesome} from "@expo/vector-icons";
+import TextIn from "../components/inputs/TextInput";
+import QRCodeScannerScreen from "./TestQR";
+import CameraScreen from "./Camera";
+
+const notificationData = [
+    {key:'1', value:'13 Days'},
+    {key:'2', value:'15 Days'},
+    {key:'3', value:'28 Days'},
+    {key:'4', value:'30 Days'},
+]
 
 
 const AddReceiptScreen = () => {
 
+    const route = useRoute();
+    const [qrData, setQrData] = useState('');
+    const [photoUri, setPhotoUri] = useState('');
+    const [photoDate, setPhotoDate] = useState('');
+    const [storeName, setStoreName] = useState('');
+    const [totalValue, setTotalValue] = useState('');
+    const [expDate, setExpDate] = useState('');
+    const [notification, setNotification] = useState('Unknown');
+    const [categoryName, setCategoryName] = useState('');
+
+    // Get the authenticated user's ID
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const userId = user.uid;
+
+    const [categoryData, setCategoryData] = useState('');
+
+    useEffect(() => {
+        if (route.params) {
+            if (route.params.qrData) {
+                setQrData(route.params.qrData);
+            }
+
+            if (route.params.photoPayload) {
+                setPhotoUri(route.params.photoPayload.photoUri);
+                setPhotoDate(route.params.photoPayload.date);
+            }
+        }
+    }, [route.params]);
+
+
+    // Fetch Categories
+    useEffect(() => {
+        populateCategoryData();
+    }, []);
+
+
+
+    const populateCategoryData = async () => {
+        try {
+            const q = query(collection(db, 'categories'), where('userId', '==', userId));
+            const querySnapshot = await getDocs(q);
+
+
+            const data = [];
+            querySnapshot.forEach((doc) => {
+                const category = doc.data();
+
+                data.push({
+                    id: doc.id,
+                    value: category.name,
+                });
+            });
+            setCategoryData(data);
+        } catch (error) {
+            console.log('Error populating category data:', error);
+        }
+    };
+    const populateCategoryDataRefresh = async () => {
+        try {
+            const q = query(collection(db, 'categories'), where('userId', '==', userId));
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const data = [];
+                querySnapshot.forEach((doc) => {
+                    const category = doc.data();
+                    data.push({
+                        id: doc.id,
+                        value: category.name,
+                    });
+                });
+                setCategoryData(data);
+            });
+
+            // Save the unsubscribe function to detach the listener when needed
+            // e.g., componentWillUnmount
+            return unsubscribe;
+        } catch (error) {
+            console.log('Error populating category data:', error);
+        }
+    };
+
+    // Submit
     const navigation = useNavigation();
-    const handleSubmit = () => {
-        navigation.navigate('Home');
+    const handleSubmit = /*useCallback(*/async () => {
+        try {
+            // Create a new document in the "Receipt" collection
+            const docRef = await addDoc(collection(db, 'receipts'), {
+                storeName: storeName,
+                totalValue: totalValue,
+                expirationDate: expDate,
+                qrCode: qrData,
+                image: photoUri,
+                notification: notification,
+                userId: userId,
+                location: "CascaisShopping",
+                category: categoryName,
+            });
 
+
+            // Retrieve the categoryId based on the category
+
+            // Retrieve the categoryId from Firebase based on the categoryName
+            const categorySnapshot = await getDocs(query(collection(db, 'categories'), where('name', '==', categoryName)));
+            const categoryDoc = categorySnapshot.docs[0];
+            const categoryId = categoryDoc.id; // Assuming there is only one category with the given name
+
+            // Store userId and categoryId in the "categoryReceipt" collection
+            await addDoc(collection(db, 'categoryReceipts'), {
+                receiptId: docRef.id,
+                categoryId: categoryId,
+            });
+
+            console.log('Category Receipt stored successfully');
+
+            // Navigate to the home screen after successful submission
+            navigation.navigate('Home');
+            clearFormData();
+
+        } catch (error) {
+            console.error('Error storing receipt:', error);
+        }
+    }/*, [categoryName])*/;
+
+    const clearFormData = () => {
+        setQrData('');
+        setPhotoUri('');
+        setPhotoDate('');
+        setStoreName('');
+        setTotalValue('');
+        setExpDate('');
+        setNotification('Unknown');
+        setCategoryName('');
     };
 
-    const handle = () => {
-
+    const handleCamera = () => {
+        navigation.navigate('Camera');
     };
 
-    const [selectedValue, setSelectedValue] = useState("java");
+    const handleStoreNameChange = (text) => {
+        setStoreName(text);
+    };
+    const handleTotalValueChange = (text) => {
+        setTotalValue(text);
+    };
+
+    const handleDateChange = (text) => {
+        setExpDate(text);
+    };
+
+    const handleQrScan = () => {
+      navigation.navigate("TestQR");
+    };
+
+    const handleCategoryChange = (text) => {
+        setCategoryName(text);
+    }
 
 
     return (
         <PaperProvider>
+
             <Portal>
                 <Modal
                     visible={true}
                     contentContainerStyle={addReceiptStyles.modalContainer}
                 >
+                    <ScrollView>
                     <View style={addReceiptStyles.waves}>
                         <Svg
                             height= "87"
@@ -46,8 +211,9 @@ const AddReceiptScreen = () => {
 
                     <View style={addReceiptStyles.modalContentContainer}>
                         <Text style={addReceiptStyles.title}>Add Receipt</Text>
-                        <TextIn  label={"Store Name"}/>
-                        <TextIn  label={"Total Value"}/>
+                        <TextIn  label={"Store Name"} value={storeName} onChangeText={handleStoreNameChange}/>
+                        <TextIn  label={"Total Value"} value={totalValue} onChangeText={handleTotalValueChange}/>
+                        <TextIn  label={"Expiration Date (DD/MM/YY)"} value={expDate} onChangeText={handleDateChange}/>
 
 
                         <View style={addReceiptStyles.optionHeader}>
@@ -55,21 +221,30 @@ const AddReceiptScreen = () => {
                             <Text>Location</Text>
                         </View>
                         <View style={addReceiptStyles.buttonContainer}>
-                            <TouchableOpacity onPress={handle} style={[addReceiptStyles.button, { height: 30 }]}>
+                            <TouchableOpacity style={[addReceiptStyles.button, { height: 30 }]}>
                                 <Text style={addReceiptStyles.label}>Choose Location</Text>
                             </TouchableOpacity>
                         </View>
 
 
+                        <View style={{flexDirection: "row", justifyContent: "space-between"}}>
+                            <View>
+                                <View style={addReceiptStyles.optionHeader}>
+                                    <Image source={require("../assets/icons/qr-code.png")} style={addReceiptStyles.icon}></Image>
+                                    <Text>QR Code</Text>
+                                </View>
+                                <View style={addReceiptStyles.buttonContainer}>
+                                    <TouchableOpacity onPress={handleQrScan} style={[addReceiptStyles.button, { height: 30 }]}>
+                                        <Text style={addReceiptStyles.label}>Scan QR Code</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
 
-                        <View style={addReceiptStyles.optionHeader}>
-                            <Image source={require("../assets/icons/qr-code.png")} style={addReceiptStyles.icon}></Image>
-                            <Text>QR Code</Text>
-                        </View>
-                        <View style={addReceiptStyles.buttonContainer}>
-                            <TouchableOpacity onPress={handle} style={[addReceiptStyles.button, { height: 30 }]}>
-                                <Text style={addReceiptStyles.label}>Scan QR Code</Text>
-                            </TouchableOpacity>
+                            {qrData && (
+                                <View style={{ width: 30, height: 30, alignSelf:"center", marginRight:40}}>
+                                    <QRCode value={qrData.qrData} size={60} />
+                                </View>
+                            )}
                         </View>
 
 
@@ -78,8 +253,18 @@ const AddReceiptScreen = () => {
                             <Image source={require("../assets/icons/ringing.png")} style={addReceiptStyles.icon}></Image>
                             <Text>Notification</Text>
                         </View>
-                        <View style={addReceiptStyles.pikerContainer}>
-
+                        <View style={addReceiptStyles.listContainer}>
+                            <SelectList
+                                boxStyles={addReceiptStyles.listSelect}
+                                setSelected={(notification) => setNotification(notification)}
+                                data={notificationData}
+                                save="value"
+                                placeholder={"None"}
+                                inputStyles={addReceiptStyles.item}
+                                arrowicon={<FontAwesome name="chevron-down" size={0} color={'transparent'}/>}
+                                search={false}
+                                dropdownStyles={{backgroundColor: "#DAF4EF", borderColor:"transparent"}}
+                            />
                         </View>
 
 
@@ -88,7 +273,17 @@ const AddReceiptScreen = () => {
                             <Image source={require("../assets/icons/categories1.png")} style={addReceiptStyles.icon}></Image>
                             <Text>Category</Text>
                         </View>
-                        <View><Text>AHAH</Text></View>
+                        <SelectList
+                            boxStyles={addReceiptStyles.listSelect}
+                            setSelected={(categoryName) => handleCategoryChange(categoryName)}
+                            data={categoryData}
+                            save="value"
+                            placeholder={"None"}
+                            inputStyles={addReceiptStyles.item}
+                            arrowicon={<FontAwesome name="chevron-down" size={0} color={'transparent'}/>}
+                            search={false}
+                            dropdownStyles={{backgroundColor: "#DAF4EF", borderColor:"transparent"}}
+                        />
 
 
 
@@ -97,10 +292,12 @@ const AddReceiptScreen = () => {
                             <Text>Image</Text>
                         </View>
                         <View style={addReceiptStyles.buttonContainer}>
-                            <TouchableOpacity onPress={handle} style={[addReceiptStyles.button, { height: 30 }]}>
+                            <TouchableOpacity onPress={handleCamera} style={[addReceiptStyles.button, { height: 30 }]}>
                                 <Text style={addReceiptStyles.label}>Open Camera</Text>
                             </TouchableOpacity>
                         </View>
+
+                        {photoUri && <Image source={{ uri: photoUri }} style={addReceiptStyles.photo} />}
 
                         <View style={addReceiptStyles.submitButton}>
                             <TouchableOpacity onPress={handleSubmit} style={addReceiptStyles.button}>
@@ -108,15 +305,46 @@ const AddReceiptScreen = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
-
+                    </ScrollView>
                 </Modal>
             </Portal>
+
         </PaperProvider>
 
     );
 };
+const Stack = createStackNavigator();
+const Main = () => {
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="AddReceipt" component={AddReceiptScreen} />
+            <Stack.Screen name="TestQR" component={QRCodeScannerScreen} />
+            <Stack.Screen name="Camera" component={CameraScreen} />
+        </Stack.Navigator>
+    )
+}
 
 const addReceiptStyles = StyleSheet.create({
+
+    photo: {
+        height: 300,
+        marginVertical: 10,
+    },
+    listContainer: {
+        width: 130,
+    },
+    listSelect: {
+        height: 30,
+        width:130,
+        justifyContent: "center",
+        backgroundColor: "#DAF4EF",
+        borderColor:"transparent"
+
+    },
+    item: {
+        position: "absolute",
+        fontSize: 15,
+    },
     modalContainer: {
         position: 'absolute',
         bottom: 0,
@@ -172,8 +400,6 @@ const addReceiptStyles = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 4,
     },
-
-
 });
 
-export default AddReceiptScreen;
+export default Main;
